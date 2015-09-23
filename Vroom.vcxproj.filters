@@ -1,0 +1,129 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Stdafx</Filter>
+    </ClCompile>
+    <ClCompile Include="Vroom.cpp" />
+    <ClCompile Include="Sources\mempcy.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\fastmath.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\dynarray.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\xmmfuncs.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
+    <ClCompile Include="Helpers.cpp" />
+    <ClCompile Include="Sources\bignum\memory.cpp">
+      <Filter>Sources\bignum</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\bignum\biginit.cpp">
+      <Filter>Sources\bignum</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\bignum\error.cpp">
+      <Filter>Sources\bignum</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\bignum\version.cpp">
+      <Filter>Sources\bignum</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\bignum\binteger\init.cpp">
+      <Filter>Sources\bignum\binteger</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\bignum\binteger\set.cpp">
+      <Filter>Sources\bignum\binteger</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\bignum\string.cpp">
+      <Filter>Sources\bignum</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\bignum\binteger\abs.cpp">
+      <Filter>Sources\bignum\binteger</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\bignum\binteger\neg.cpp">
+      <Filter>Sources\bignum\binteger</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\bignum\binteger\swap.cpp">
+      <Filter>Sources\bignum\binteger</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\bignum\binteger\clear.cpp">
+      <Filter>Sources\bignum\binteger</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\bignum\memory\default.cpp">
+      <Filter>Sources\bignum\memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Sources\bignum\memory\pool.cpp">
+      <Filter>Sources\bignum\memory</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>Stdafx</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Stdafx</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Vroom.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\memcpy.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\fastmath.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\dynarray.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="Include\VroomInit.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\math\bignum.h">
+      <Filter>Include\math</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\sys\mem.h">
+      <Filter>Include\sys</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Stdafx">
+      <UniqueIdentifier>{7921372f-1258-4805-abb4-fffa40cd8172}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{4165281a-10cf-4d4d-bc76-ee008fcc4839}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources">
+      <UniqueIdentifier>{3cc2fef4-c6f2-46fb-aac4-27f04b1ff64a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\memory">
+      <UniqueIdentifier>{b2bdb20d-06aa-4f54-a6e0-0decb9d3ed8e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\bignum">
+      <UniqueIdentifier>{764f6a0d-bf2a-482c-be15-7b5632d4e7b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\bignum\binteger">
+      <UniqueIdentifier>{077d1996-a678-42f5-89ef-42898778a848}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\bignum\bfloat">
+      <UniqueIdentifier>{5e35143b-1378-4afe-a34a-299620e4ce60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\bignum\brational">
+      <UniqueIdentifier>{3ce5e6e1-3176-432c-8b52-b98ab269e2a3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\math">
+      <UniqueIdentifier>{8008a589-307d-4805-8a92-991729ded131}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\sys">
+      <UniqueIdentifier>{2f20a27f-42e6-4b5b-b4f6-4fcc3fbe036f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\bignum\memory">
+      <UniqueIdentifier>{92296b1c-2a88-49ca-8daa-76d33a062216}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Vroom.rc" />
+  </ItemGroup>
+</Project>

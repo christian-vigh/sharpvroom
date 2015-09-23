@@ -1,0 +1,244 @@
+<?php
+	$LOCALROOT			= getenv ( "LOCALPHP" ) ;
+	$CRIMSON_CONFIGURATION 		= $LOCALROOT . "/Crimson.php" ;
+	$CRIMSON_NO_DBCONNECTION        = true ;
+
+	require ( $LOCALROOT . '/Crimson/Crimson.phpinclude' ) ;
+	require ( "vroom.phpinclude" ) ;
+
+	CrimsonApplication::RequireFileOnce
+	   (
+	   	'File/CSVFile.phpclass',
+		'Utilities/CL/CLParser.phpclass'
+  	    ) ;
+
+
+	/*==============================================================================================================
+
+	    Global variables.
+
+	  ==============================================================================================================*/
+	$DefaultInput 		=  $VROOM_SCRIPTDATA . "/pooldata.csv" ;
+	$DefaultOutput 		=  $VROOM_SOURCES . "/bignum/memory/pooldata.h" ;
+
+
+	/*==============================================================================================================
+
+	    Command-line definitions.
+
+ 	  ==============================================================================================================*/
+	$Definitions = <<<END
+<command name="genbnpooldata">
+
+	<usage>Generates the pooldata.h file, used by the 'pool' memory manager of the 'bignum' package.</usage>
+
+	<file name="input, i" value-text="input file" disposition="existing" default="$DefaultInput">
+		Input CSV file containing the allocation data used to generate the output pooldata.h file.
+	</file>
+
+	<unnamed>
+		<file value-text="output file" disposition="any" default="$DefaultOutput">
+			Output filename. If none specified, results are written to the standard output.
+		</file>
+	</unnamed>
+
+</command>
+END;
+
+
+	/*==============================================================================================================
+
+	    GetCSVContents -
+		Gets the CSV file contents.
+
+	  ==============================================================================================================*/
+	function  GetCSVContents ( $file )
+	   {
+	   	$result 	=  array
+		   (
+		   	'entries'		=>  array ( ),
+		   	'min-size' 		=>  0xFFFFFFFF,
+		   	'max-size'		=>  -1,
+		   	'total-block-size'	=>  0,
+		   	'total-pointer-size'	=>  0,
+		   	'total-size'		=>  0
+		    ) ;
+
+
+		$CSV 		=  new CrimsonCSVFile ( $file, false ) ;
+		$Started 	=  false ;
+
+		foreach (  $CSV  as  $line )
+		   {
+		   	$values 	=  $CSV -> AsColumns ( $line ) ;
+
+		   	if  ( $Started )
+		   	   {
+				if  ( $line  ==  ""  ||  $values [0]  ==  "" )
+					break ;
+
+	   	   		if  ( is_numeric ( $values [0] )  &&  is_numeric ( $values [1] ) )
+				   {
+		   			$block_data 	=  $values [0] * $values [1] ;
+		   			$pointer_data 	=  $values [1] * 4 ;
+
+				   	$result [ 'entries' ] [] = array
+				   	   (
+				   	   	'size' 		=>  $values [0],
+				   	   	'count'		=>  $values [1],
+				   	   	'block-size'	=>  $block_data,
+				   	   	'pointer-size'  =>  $pointer_data,
+				   	   	'total-size'	=>  $block_data + $pointer_data
+				   	    ) ;
+
+			   	    	if  ( $result [ 'min-size' ]  >  $values [0] )
+			   	    		$result [ 'min-size' ] = $values [0] ;
+
+		   	    		if  ( $result [ 'max-size' ]  <  $values [0] )
+		   	    			$result [ 'max-size' ] = $values [0] ;
+
+	   	    			$result [ 'total-block-size' ] 		+=  $block_data ;
+	   	    			$result [ 'total-pointer-size' ]	+=  $pointer_data ;
+	   	    			$result [ 'total-size' ]		+=  $block_data + $pointer_data ;
+				    }
+				else
+					error ( "File '$file' : non-numeric values found in the following input line :\n$line" ) ;
+		   	    }
+			else if  ( $line  ==  ""  ||  $values [0]  ==  "" )
+				continue ;
+			else if  ( strtolower ( $values [0] )  ==  "data size"  &&  strtolower ( $values [1] )  ==  "count" )
+				$Started = true ;
+		    }
+
+    		if  ( ! $Started )
+    			error ( "File '$file' should contain a header line somewhere whose first columns are 'Data size' and 'Count'." ) ;
+
+		return ( $result ) ;
+	    }
+
+
+	/*==============================================================================================================
+
+	    BuildPoolAllocationTable -
+	    	Builds an introductory comment header describing the meaning of the pool allocation array.
+
+	  ==============================================================================================================*/
+	function  BuildPoolAllocationTable ( $Values )
+	   {
+  		$format   =  "	     %5d         %6d      %10d              %10d    %10d\n" ;
+  		$total    =  "	                 Total :       %10d              %10d    %10d\n" ;
+	   	$result   =  "/*==============================================================================================================\n" 	.
+		   	     "\n"															.
+			     "	The pool_allocation_table array specifies how many blocks of memory should be pre-allocated, together\n"  		.
+			     "	with their size. It is a two-dimension array, where the second dimension has the following elements :\n"		.
+		   	     "\n"															.
+			     " 	- pool_allocation_table [x] [0] -\n"											.
+			     "		Block size.\n"													.
+			     "	- pool_allocation_table [x] [1] -\n"											.
+			     "		Number of blocks of that size to be pre-allocated.\n"								.
+ 		   	     "\n"															.
+			     "	For a given size, the equivalent number of pre-allocated bytes is equal to :\n"						.
+			     "		pool_allocation_table [x] [0] * pool_allocation_table [x] [1]\n"						.
+ 		   	     "\n"															.
+	                     "	Currently, the following values are configured (note that extra space is required for pointer to data blocks) :\n"	.
+ 		   	     "\n"															.
+			     "	Block size    Block count    Size * Count    Count * pointer size    Total size\n"					.
+			     "	~~~~~~~~~~    ~~~~~~~~~~~    ~~~~~~~~~~~~    ~~~~~~~~~~~~~~~~~~~~    ~~~~~~~~~~\n" ;
+
+		foreach ( $Values [ 'entries' ]  as  $entry )
+		   	$result .= sprintf ( $format, $entry [ 'size' ], $entry [ 'count' ], $entry [ 'block-size' ], $entry [ 'pointer-size' ],
+						      $entry [ 'total-size' ] ) ;
+
+		$total_line 	=  sprintf ( $total, $Values [ 'total-block-size' ], $Values [ 'total-pointer-size' ], $Values [ 'total-size' ] ) ;
+
+	    	$result .=  "\n"															.
+			     "	                             ~~~~~~~~~~~~    ~~~~~~~~~~~~~~~~~~~~    ~~~~~~~~~~\n"					.
+   			    "$total_line\n"														.
+ 		   	    "\n"															.
+ 			    "  ==============================================================================================================*/\n" 	.
+ 		   	     "\n"															.
+ 			    "size_t		pool_allocation_table [] [2] =\n"									.
+ 			    "   {\n" ;
+
+	    	foreach ( $Values [ 'entries' ]  as  $entry )
+	    	   	$result  .=  "	{ " . sprintf ( "%8d", $entry [ 'size' ] ) . ", " . sprintf ( "%8d", $entry [ 'count' ] ) . " },\n" ;
+
+		$result .=  "	{ " . sprintf ( "%8d", 0 ) . ", " . sprintf ( "%8d", 0 ) . " }\n" .
+			    "    } ;\n" ;
+
+  		return ( $result ) ;
+	    }
+
+
+	/*==============================================================================================================
+
+	    BuildSizeMatcherTable -
+	    	Builds a table that matches a size to an index in the pool_allocation_table array.
+
+	  ==============================================================================================================*/
+	function  BuildSizeMatcherTable ( $Values )
+	   {
+		$result  =  "/*==============================================================================================================\n" 	.
+  			    "\n"															.
+			    "	The size_matcher_table array matches an input size (ie, a number of bytes to be allocated) with an index\n"		.
+			    "	in the pool_allocation_table array.\n"											.
+  			    "\n"															.
+			    "  ==============================================================================================================*/\n" 	.
+ 		   	    "\n"															.
+ 		   	    "int 		size_matcher_table []  =\n"										.
+			    "   {\n" 															.
+		     	    "	/*           0 */           0,\n" ;
+
+		$entries 	=  $Values [ 'entries' ] ;
+		$index 		=  0 ;
+		$current 	=  1 ;
+
+	 	while  ( $index  <  count ( $entries ) )
+	 	   {
+			$entry 	=  $entries [ $index ] ;
+
+   			for  ( $i = $current ; $i  <=  $entry [ 'size' ] ; $i ++ )
+			   	$result .= "	/*  " . sprintf ( "%10d", $i ) . " */  " . sprintf ( "%10d", $index ) . ",\n" ;
+
+			$current = $entry  [ 'size' ] + 1 ;
+			$index ++ ;
+	 	    }
+
+
+   		$result  .=  "	/*           0 */           0\n" .
+   			     "    } ;\n" ;
+
+     		return ( $result ) ;
+ 	    }
+
+
+	/*==============================================================================================================
+
+	    Main program.
+
+	  ==============================================================================================================*/
+        // Process command-line parameters
+	$CL 		=  new CrimsonCLParser ( $Definitions ) ;
+	$Input 		=  CrimsonPath::ToUnix ( $CL -> input, true ) ;
+	$Output 	=  CrimsonPath::ToUnix ( $CL -> UnnamedParameters [0] -> GetValue ( ), true ) ;
+	$Contents 	=  "" ;
+
+	// Get CSV file contents
+	$Values 	=  GetCSVContents ( $Input ) ;
+
+	if  ( $Values [ 'entries' ] [0] [ 'size' ]  !=  1 )
+		error ( "The very first data size must be a size of 1." ) ;
+
+	// Build comment header
+	$Contents       =  "// Minimum and maximum size for items held in the pool.\n" .
+			   "# define		MIN_POOL_ALLOCATION_SIZE		" . $Values [ 'min-size' ] . "\n" .
+			   "# define		MAX_POOL_ALLOCATION_SIZE		" . $Values [ 'max-size' ] . "\n" .
+			   "\n\n\n" .
+	 		   BuildPoolAllocationTable ( $Values ) .
+			   "\n\n" .
+			   BuildSizeMatcherTable ( $Values ) ;
+
+	$FileContents 	=  expand_file_comment ( $Output, "Allocation information for the bignum pool memory manager.", __FILE__, $Contents ) ;
+
+	file_put_contents ( $Output, $FileContents ) ;
+ ?>
